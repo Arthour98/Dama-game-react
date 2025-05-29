@@ -2,16 +2,16 @@ import React,{useContext,createContext,useEffect,useState} from "react";
 
 
 
-const damaContext=createContext();
+const DamaContext=createContext();
 
 
-export function damaProvider({children})
+export default function DamaProvider({children})
 {
     const [pawns,setPawns]=useState([]);
     const [enemyPawns,setEnemyPawns]=useState([]);
     const [map,setMap]=useState([]);
-    const [posistion,setPosition]=useState([{}]);
-    const[session,setSession]=(false);
+    
+   
 
 
     const CreatePawns=(numb)=>
@@ -34,14 +34,13 @@ export function damaProvider({children})
 
     const killEnemyPawn=(pawn)=>
     {
-    let pawnArr=[...pawns.filter(p=>p!=pawn)];
+    let pawnArr=[...enemyPawns.filter(p=>p!=pawn)];
     setEnemyPawns(pawnArr);
     }
 
-    const createMap=()=>
+    const createMap=(newmap)=>
     {
-    const board=new Array(4).forEach(elem=>elem=new Array(4));
-    setMap(board);
+    setMap(newmap);
     }
 
 
@@ -80,17 +79,17 @@ export function damaProvider({children})
 
 return(
     <>
-    <damaContext.Provider value=
+    <DamaContext.Provider value=
     {{createMap,createEnemyPawns,CreatePawns,
     killPawn,killEnemyPawn,
-    initialPos,map,pawns,enemyPawns,posistion,session}}>
+    initialPos,map,pawns,enemyPawns}}>
         {children}
-    </damaContext.Provider>
+    </DamaContext.Provider>
     </>
 )
 };
 
 export const useDama=()=>
 {
-    return useContext(useDama);
+    return useContext(DamaContext);
 }

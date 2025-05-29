@@ -1,12 +1,12 @@
 import React,{useRef,useEffect} from "react";
-
+import { useDama } from "../DamaContext";
 
 
 
 
 function Board()
 {
-
+const {createMap,map}=useDama();
 const CanvasRef=useRef(null);
 
 
@@ -72,7 +72,7 @@ y=Math.floor(row)*height;
 Map[i]=new square(c,x,y,width,height)
 Map[i].build();
 }
-
+createMap(Map);
 },[])
 
 
