@@ -1,12 +1,14 @@
 import React,{useRef,useEffect} from "react";
 import { useDama } from "../DamaContext";
-
-
+import { InitGame } from "./InitGame";
+import { ValidMove } from "./ValidMove";
 
 
 function Board()
 {
-const {createMap,map}=useDama();
+const {createMap,map,createPawns,createEnemyPawns,
+pawns,enemyPawns
+}=useDama();
 const CanvasRef=useRef(null);
 
 
@@ -28,10 +30,23 @@ c.stroke();
 c.closePath()
 c.restore();
 }
+this.pawn=function(image)
+{
+let centeredX=this.x+this.width/2;
+let centeredY=this.y+this.height/2;
+let radius=(height/2)/1.5;
+c.save();
+c.beginPath();
+c.arc(centeredX,centeredY,radius,0,Math.PI*2);
+c.closePath();
+c.clip();
+c.drawImage(image, this.x + 10, this.y + 10, this.width - 20, this.height - 20);
+c.restore();
+}
 }
 
 
-console.log(Map);
+
 
 useEffect(()=>
 {
@@ -73,8 +88,17 @@ Map[i]=new square(c,x,y,width,height)
 Map[i].build();
 }
 createMap(Map);
+InitGame(c,Map,createPawns,createEnemyPawns);
 },[])
 
+
+useEffect(() => {
+  if (!CanvasRef.current || !pawns.length || !map.length) return;
+  const canvas = CanvasRef.current;
+  const c = canvas.getContext("2d");
+  ValidMove(canvas, c, pawns, enemyPawns, map);
+  console.log(pawns[0]);
+}, [pawns, map]);
 
 
 
@@ -83,7 +107,7 @@ createMap(Map);
 
 
 return(
-    <canvas ref={CanvasRef} className="border border-black">
+    <canvas ref={CanvasRef} className="border border-black z-50 bg-white">
 
     </canvas>
 )

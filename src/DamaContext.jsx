@@ -14,16 +14,14 @@ export default function DamaProvider({children})
    
 
 
-    const CreatePawns=(numb)=>
+    const createPawns=(pawnsArr)=>
     {
-        let pawnsArr=new Array(numb);
         setPawns(pawnsArr);
     }
 
-    const createEnemyPawns=(numb)=>
+    const createEnemyPawns=(enemyPawnsArr)=>
     {
-        let pawnsArr=new Array(numb);
-        setEnemyPawns(pawnsArr)
+        setEnemyPawns(enemyPawnsArr)
     }
 
     const killPawn=(pawn)=>
@@ -80,7 +78,7 @@ export default function DamaProvider({children})
 return(
     <>
     <DamaContext.Provider value=
-    {{createMap,createEnemyPawns,CreatePawns,
+    {{createMap,createEnemyPawns,createPawns,
     killPawn,killEnemyPawn,
     initialPos,map,pawns,enemyPawns}}>
         {children}
