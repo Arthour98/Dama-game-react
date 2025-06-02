@@ -1,6 +1,6 @@
 import React,{useRef,useEffect} from "react";
 import { useDama } from "../DamaContext";
-import { InitGame } from "./InitGame";
+import { InitPawns } from "./InitGame";
 import { ValidMove } from "./ValidMove";
 
 
@@ -12,38 +12,28 @@ pawns,enemyPawns
 const CanvasRef=useRef(null);
 
 
-function square(c,x,y,width,height)
+function square(c,x,y,width,height,color)
 {
 this.c=c;
 this.x=x;
 this.y=y;
 this.width=width;
 this.height=height;
+this.color=color
 this.build=function()
 {
 c.save();
 c.beginPath();
 c.rect(this.x,this.y,this.width,this.height);
-c.fillStyle="black";
+c.fillStyle=this.color;
 c.fill();
 c.stroke();
 c.closePath()
 c.restore();
 }
-this.pawn=function(image)
-{
-let centeredX=this.x+this.width/2;
-let centeredY=this.y+this.height/2;
-let radius=(height/2)/1.5;
-c.save();
-c.beginPath();
-c.arc(centeredX,centeredY,radius,0,Math.PI*2);
-c.closePath();
-c.clip();
-c.drawImage(image, this.x + 10, this.y + 10, this.width - 20, this.height - 20);
-c.restore();
 }
-}
+
+
 
 
 
@@ -67,6 +57,7 @@ const width=100;
 const height=100;
 let x=0;
 let y=0;
+let color="black";
 for(let i=0;i<Map.length;i++)
 {
 let row=i/4;
@@ -84,12 +75,21 @@ x=0;
 }
 
 y=Math.floor(row)*height;
-Map[i]=new square(c,x,y,width,height)
+Map[i]=new square(c,x,y,width,height,color);
 Map[i].build();
 }
 createMap(Map);
-InitGame(c,Map,createPawns,createEnemyPawns);
 },[])
+
+useEffect(() => {
+  if (!CanvasRef.current  || !map.length) return;
+  const canvas = CanvasRef.current;
+  const c = canvas.getContext("2d");
+  InitPawns(c,map,createPawns,createEnemyPawns);
+}, [map]);
+
+ console.log(pawns);
+console.log(enemyPawns);
 
 
 useEffect(() => {
@@ -98,6 +98,7 @@ useEffect(() => {
   const c = canvas.getContext("2d");
   ValidMove(canvas, c, pawns, enemyPawns, map);
   console.log(pawns[0]);
+  console.log(map[0]);
 }, [pawns, map]);
 
 

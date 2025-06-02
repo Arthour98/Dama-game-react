@@ -10,7 +10,7 @@ export default function DamaProvider({children})
     const [pawns,setPawns]=useState([]);
     const [enemyPawns,setEnemyPawns]=useState([]);
     const [map,setMap]=useState([]);
-    
+    const [position,setPosition]=useState(pawns)
    
 
 
@@ -41,46 +41,20 @@ export default function DamaProvider({children})
     setMap(newmap);
     }
 
-
-    const initialPos=(map)=>
+    const newPosition=(pawn)=>
     {
-    let positionsPawns=[];
-    let positionsEnemyPawns=[];
-    for(let i=0;i<pawns.length;i++)
-    {
-    for(let y=0;y<pawns.length*2;y+=2)
-    {
-        positionsPawns[i]=
-        {
-        pawn:pawns[i],
-        pos:map[y][y]
-        }
-    }
+        setPosition(pawn={x,y},...pawns);
     }
 
-    for(let i=0;i<enemyPawns.length;i++)
-    {
-    for(let y=0;y<enemyPawns.length*2;y+=2)
-    {
-        positionsEnemyPawns=
-        {
-        pawns:pawns[i],
-        pos:map[map.length-y][map.length-y]
-        }
-    }
-    }
-    const allPos=[...positionsPawns,...positionsEnemyPawns];
 
-    setPosition(allPos);
-}
 
 
 return(
     <>
     <DamaContext.Provider value=
     {{createMap,createEnemyPawns,createPawns,
-    killPawn,killEnemyPawn,
-    initialPos,map,pawns,enemyPawns}}>
+    killPawn,killEnemyPawn,newPosition,
+    position,map,pawns,enemyPawns}}>
         {children}
     </DamaContext.Provider>
     </>
