@@ -2,15 +2,62 @@
 import whitePawn from "../assets/whitePawn.png";
 import blackPawn from "../assets/blackPawn.png";
 
-
-
-export function pawn(c,square)
+export function square(c,x,y,width,height,color)
 {
 this.c=c;
-this.x=square.x;
-this.y=square.y;
-this.width=square.width;
-this.height=square.height;
+this.x=x;
+this.y=y;
+this.width=width;
+this.height=height;
+this.color=color
+this.build=function()
+{
+c.save();
+c.beginPath();
+c.rect(this.x,this.y,this.width,this.height);
+c.fillStyle=this.color;
+c.fill();
+c.stroke();
+c.closePath()
+c.restore();
+}
+}
+
+export function damaBoard(c,Map)
+{
+    const width=100;
+    const height=100;
+    let x=0;
+    let y=0;
+    let color="black";
+    for(let i=0;i<Map.length;i++)
+    {
+    let row=i/4;
+    if(i%4!=0)
+    {
+    x+=width*2;
+    }
+    else if(i%4==0&&i/4%2==0)
+    {
+    x=width;
+    }
+    else
+    {
+    x=0;
+    }
+    y=Math.floor(row)*height;
+    Map[i]=new square(c,x,y,width,height,color);
+    Map[i].build();
+    }
+}
+
+export function pawn(c,map)
+{
+this.c=c;
+this.x=map.x;
+this.y=map.y;
+this.width=map.width;
+this.height=map.height;
 this.init=function(image)
 {
 let centeredX=this.x+this.width/2;
@@ -59,6 +106,7 @@ Pawns.init(pawnIcon);
 }
 createPawns(pawnArr);
 }
+
 
 enemyPawnIcon.onload=()=>
 {
