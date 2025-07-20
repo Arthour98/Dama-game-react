@@ -35,8 +35,8 @@ InitPawns(c,Map,createPawns,createEnemyPawns);
 
 useEffect(()=>
 {
-  if(turn===true)
-  {
+if(turn===true)
+{
 pawns.forEach(pawn=>console.log(pawn));
 const canvas=CanvasRef.current;
 const c=canvas.getContext("2d");
@@ -85,14 +85,149 @@ let point=dimension(e);
 for(let move of validForMove)
 {
 if(point.x>=move.x&&point.x<=move.x+move.width
-  &&point.y>=move.y&&point.y<=move.y+move.height
-)
+  &&point.y>=move.y&&point.y<=move.y+move.height)
 {
 newPosition(selectedForMove.id,move.x,move.y);
 let newPos={id:selectedForMove.id,x:move.x,y:move.y}
+validForMove = [];
+switchTurn(turn);
+selectedForMove = null;
+return;
+}}
+
+
+prevValidMoves.forEach(move=>
+{
+let Square=new square(c,move.x,move.y,100,100,"black");
+Square.build();
+})
+
+//logic for validMovves
+for(let i=0;i<pawns.length;i++)
+{
+if(point.x>=pawns[i].x&&point.x<=pawns[i].x+pawns[i].width
+&&point.y>=pawns[i].y&&point.y<=pawns[i].y+pawns[i].height)
+{
+selectedPawn=pawns[i]
+break;
+}
+};
+
+
+if(selectedPawn!=null)
+{
+for(let i=1;i<=map.length;i++)
+{
+let indexPawn=0;
+let oddRow=i/4%2!==0;
+let evenRow=Math.ceil(i/4)%2==0;
+let firstCol=i%4==1;
+let secondCol=i%4==2;
+let thirdCol=i%4==3;
+let forthCol=i%4==0;
+if(selectedPawn.x==map[i-1].x&&selectedPawn.y==map[i-1].y)
+{
+    indexPawn=i-1;
+
+if(oddRow&&firstCol)
+{
+validMoves=[map[indexPawn+4],map[indexPawn+5]];
+console.log("odd");
+}
+else if(oddRow&&secondCol)
+{
+validMoves=[map[indexPawn+4],map[indexPawn+5]];
+console.log("odd");
+}
+else if(oddRow&&thirdCol)
+{
+validMoves=[map[indexPawn+4],map[indexPawn+5]];
+console.log("odd");
+}
+else if(oddRow&&forthCol)
+{
+ validMoves=[map[indexPawn+4]];
+ console.log("odd");   
+}
+if(evenRow&&firstCol)
+{
+validMoves=[map[indexPawn+4]]
+console.log("even");
+}
+else if(evenRow&&secondCol)
+{
+validMoves=[map[indexPawn+3],map[indexPawn+4]];
+console.log("even");
+}
+else if(evenRow&&thirdCol)
+{
+validMoves=[map[indexPawn+3],map[indexPawn+4]]
+console.log("even");
+}
+else if(evenRow&&forthCol)
+{
+validMoves=[map[indexPawn+3],map[indexPawn+4]]
+console.log("even");
+}}}
+
+let _validMoves=validMoves.filter(m=>!pawns.some(p=>p.y===m.y&&p.x===m.x))
+prevValidMoves=_validMoves;
+validForMove=_validMoves; //key expression
+selectedForMove=selectedPawn;
+
+_validMoves.forEach(m=>
+    {
+      let s=new square(c,m.x,m.y,100,100,"green");
+      s.build();
+    })
+    
+}
+else return ;
+}
+
+canvas.addEventListener("click",validMove);
+
+return () => {
+    canvas.removeEventListener("mousemove", mouseMove);
+    canvas.removeEventListener("click", validMove);
+  };
+}},[pawns,map,turn])
+
+//Enemy turn 
+useEffect(()=>
+{
+if(turn===false)
+{
+enemyPawns.forEach(pawn=>console.log(pawn));
+const canvas=CanvasRef.current;
+const c=canvas.getContext("2d");
+
+let pawnIcon=new Image(80,80);
+let enemyIcon=new Image(80,80);
+pawnIcon.src=whitePawn;
+enemyIcon.src=blackPawn;
+
+let validMoves=[];
+let validForMove=[];
+let prevValidMoves=[];
+
+let availablePawns=Array.from(enemyPawns).filter(pawn=>validMoves!=0);
+let randPawn=Math.round(Math.random()*availablePawns.length);
 
 
 
+
+
+
+function randMove(e)
+{
+for(let move of validForMove)
+{
+if(point.x>=move.x&&point.x<=move.x+move.width
+  &&point.y>=move.y&&point.y<=move.y+move.height)
+{
+newPosition(selectedForMove.id,move.x,move.y);
+let newPos={id:selectedForMove.id,x:move.x,y:move.y}
 validForMove = [];
 selectedForMove = null;
 return;
@@ -188,24 +323,13 @@ _validMoves.forEach(m=>
 else return ;
 }
 
-canvas.addEventListener("click",validMove);
-
-
-
-
-
-
-
-
-
-
+canvas.addEventListener("click",randMove);
 return () => {
-    canvas.removeEventListener("mousemove", mouseMove);
-    canvas.removeEventListener("click", validMove);
+    canvas.removeEventListener("click", randMove);
   };
 }},[pawns,map,turn])
 
-
+//redraw logic !
 useEffect(() => {
     const canvas = CanvasRef.current;
     const c = canvas.getContext("2d");
