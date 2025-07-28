@@ -42,8 +42,17 @@ export default function DamaProvider({children})
     setMap(newmap);
     }
 
- const newPosition = (id, x, y) => {
+ const newPositionPawns = (id, x, y) => {
     setPawns((newPos) => {
+      const updated = newPos.map((p) =>
+        p.id === id ? { ...p, x, y } : p
+      );
+      return [...updated];
+    });
+  };
+
+   const newPositionEnemyPawns = (id, x, y) => {
+    setEnemyPawns((newPos) => {
       const updated = newPos.map((p) =>
         p.id === id ? { ...p, x, y } : p
       );
@@ -61,7 +70,7 @@ return(
     <>
     <DamaContext.Provider value=
     {{createMap,createEnemyPawns,createPawns,
-    killPawn,killEnemyPawn,newPosition,switchTurn,turn,
+    killPawn,killEnemyPawn,newPositionPawns,newPositionEnemyPawns,switchTurn,turn,
      map,pawns,enemyPawns}}>
         {children}
     </DamaContext.Provider>
