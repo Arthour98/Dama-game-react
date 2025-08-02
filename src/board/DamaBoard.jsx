@@ -31,6 +31,8 @@ c.scale(ratio,ratio);
 damaBoard(c,Map);
 createMap(Map);
 InitPawns(c,Map,createPawns,createEnemyPawns);
+
+   
 },[])
 
 useEffect(()=>
@@ -190,7 +192,7 @@ useEffect(()=>
 {
 if(turn===false)
 {
-setTimeout(()=>{
+
 const canvas=CanvasRef.current;
 const c=canvas.getContext("2d");
 let pawnIcon=new Image(80,80);
@@ -205,20 +207,9 @@ let prevValidMoves=[]; // previus green highlighted moves so i can clear and red
 
 
 
-
-prevValidMoves.forEach(move=>
-{
-let Square=new square(c,move.x,move.y,100,100,"black");
-Square.build();
-})////redrawing the green with black when selecting other pawn 
-
-//logic for validMovves
-
-
-
 for(let selectedPawn of selectedPawns)
 {
-for(let i=map.length-1;i>0;i--)
+for(let i=map.length;i>0;i--)
 {
 let indexPawn=0;
 let oddRow=i/4%2!==0;
@@ -227,9 +218,9 @@ let firstCol=i%4==1;
 let secondCol=i%4==2;
 let thirdCol=i%4==3;
 let forthCol=i%4==0;
-if(selectedPawn.x==map[i-1].x&&selectedPawn.y==map[i-1].y)
+if(selectedPawn.x==map[map.length-i].x&&selectedPawn.y==map[map.length-i].y)
 {
-    indexPawn=i-1;
+    indexPawn=map.length-i;
 
 if(oddRow&&firstCol)
 {
@@ -275,16 +266,15 @@ console.log("even");
 let _validMoves=validMoves.filter(m=>!enemyPawns.some(p=>p.y===m.y&&p.x===m.x)&&!pawns.some(p=>p.y===m.y&&p.x===m.x))
 if(_validMoves.length>0)
 {
-prevValidMoves=_validMoves;
-validForMove.push({id:selectedPawn.id,moves:_validMoves});
-_validMoves.forEach(m=>
-    {
-      let s=new square(c,m.x,m.y,100,100,"green");
-      s.build();
-    })
+validForMove.push({id:selectedPawn.id,x:selectedPawn.x,y:selectedPawn.y,moves:_validMoves});
+}
+else 
+{
+  continue;
+}
 }
    
-}
+
 function randMove()
 {
 let randPawnIndex=Math.floor(Math.random()*validForMove.length);
@@ -292,17 +282,35 @@ randPawn=validForMove[randPawnIndex];
 let randMove={x:randPawn.moves[Math.floor(Math.random()*randPawn.moves.length)].x,
 y:randPawn.moves[Math.floor(Math.random()*randPawn.moves.length)].y
 };
-console.log(randPawn.moves[0].x,randPawn.moves[1].x);
+randPawn.moves.forEach(m=>
+    {
+      let s=new square(c,m.x,m.y,100,100,"green");
+      s.build();
+    });
+let s=new square(c,randPawn.x,randPawn.y,100,100,"green");
+let p=new pawn(c,randPawn).init(whitePawn);
+
+s.build();
+if(randPawn)
 console.log(randPawn.id);
+setTimeout(()=>{
 newPositionEnemyPawns(randPawn.id,randMove.x,randMove.y);
 switchTurn(turn);
+randPawn.moves.forEach(move=>
+{
+let Square=new square(c,move.x,move.y,100,100,"black");
+Square.build();
+})
 validForMove = [];
 validMoves=[];
 randPawn=null;
+prevValidMoves=[];
+ },2000)
 }
+setTimeout(()=>{
 randMove(); 
 
-},3000)}},[enemyPawns,map,turn]);
+},1000)}},[enemyPawns,pawns,map,turn]);
 
 //redraw logic !
 useEffect(() => {
@@ -310,7 +318,6 @@ useEffect(() => {
     const c = canvas.getContext("2d");
 
     c.clearRect(0, 0, canvas.width, canvas.height);
-
     map.forEach((s) =>
       new square(c, s.x, s.y, s.width, s.height, "black").build()
     );
