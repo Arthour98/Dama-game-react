@@ -121,9 +121,15 @@ Pawns.init(enemyPawnIcon);
 createEnemyPawns(enemyPawnArr);
 }
 
+}
 
+/** 
+*@param {array}enemyPawns- array that gonna be iterated
+*@param {obj} mapPos - object that keys are gonna compared to find the desired id of pawn
+*/
 
-
-
-
+export function idFinder(enemyPawns,mapPos)
+{
+const pawn=enemyPawns.find(e=>e.x===mapPos.x&&e.y===mapPos.y);
+return pawn.id;
 }

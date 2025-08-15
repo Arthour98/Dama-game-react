@@ -31,9 +31,10 @@ export default function DamaProvider({children})
     setPawns(pawnArr);
     }
 
-    const killEnemyPawn=(pawn)=>
+    const killEnemyPawn=(id)=>
     {
-    let pawnArr=[...enemyPawns.filter(p=>p!=pawn)];
+    let killedPawn=enemyPawns.find(p=>p.id===id);
+    let pawnArr=enemyPawns.filter(p=>p!==killedPawn);
     setEnemyPawns(pawnArr);
     }
 

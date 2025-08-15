@@ -1,6 +1,6 @@
 import React,{useRef,useEffect} from "react";
 import { useDama } from "../DamaContext";
-import { InitPawns } from "./gameUtils";
+import { idFinder, InitPawns } from "./gameUtils";
 import { damaBoard } from "./gameUtils";
 import whitePawn from "../assets/whitePawn.png";
 import blackPawn from "../assets/blackPawn.png";
@@ -83,12 +83,19 @@ canvas.addEventListener("mousemove",mouseMove);
 function validMove(e)
 {
 let point=dimension(e);
+console.log(validForMove);
 for(let move of validForMove)
 {
 if(point.x>=move.x&&point.x<=move.x+move.width
   &&point.y>=move.y&&point.y<=move.y+move.height)
 {
+  console.log(move.x)
 newPositionPawns(selectedForMove.id,move.x,move.y);
+if(move.kill)
+{
+  killEnemyPawn(move.kill);
+}
+
 switchTurn(turn);
 validForMove = [];
 selectedForMove = null;
@@ -125,41 +132,131 @@ let firstCol=i%4==1;
 let secondCol=i%4==2;
 let thirdCol=i%4==3;
 let forthCol=i%4==0;
+
 if(selectedPawn.x==map[i-1].x&&selectedPawn.y==map[i-1].y)
 {
-    indexPawn=i-1;
+  indexPawn=i-1;
 
-if(oddRow&&firstCol)
-{
-validMoves=[map[indexPawn+4],map[indexPawn+5]];
+  let evenHasRightEnemy=enemyPawns.some(e=>e.x===map[indexPawn+5].x&&e.y===map[indexPawn+5].y)
+  &&!enemyPawns.some(e=>e.x===map[indexPawn+9].x&&e.y===map[indexPawn+9].y);
+  let evenHasLeftEnemy=enemyPawns.some(e=>e.x===map[indexPawn+4].x&&e.y===map[indexPawn+4].y)
+  &&!enemyPawns.some(e=>e.x===map[indexPawn+7].x&&e.y===map[indexPawn+7].y); //logic to check evenspawns enemies
+
+  let oddHasRightEnemy=enemyPawns.some(e=>e.x===map[indexPawn+4].x&&e.y===map[indexPawn+4].y)
+  &&!enemyPawns.some(e=>e.x===map[indexPawn+9].x&&e.y===map[indexPawn+9].y);
+  let oddHasLeftEnemy=enemyPawns.some(e=>e.x===map[indexPawn+3].x&&e.y===map[indexPawn+3].y)
+  &&!enemyPawns.some(e=>e.x===map[indexPawn+7].x&&e.y===map[indexPawn+7].y); //logic to check oddpawns enemies;
+
+
+
+if (oddRow && firstCol) {
+    validMoves = [map[indexPawn + 4], map[indexPawn + 5]];
+    oddHasRightEnemy ? validMoves.push({
+        kill: idFinder(enemyPawns,map[indexPawn + 4]),
+        x: map[indexPawn + 9].x,
+        y: map[indexPawn + 9].y,
+        width: map[indexPawn + 9].width,
+        height: map[indexPawn + 9].height
+    }) : null;
 }
-else if(oddRow&&secondCol)
-{
-validMoves=[map[indexPawn+4],map[indexPawn+5]];
+else if (oddRow && secondCol) {
+    validMoves = [map[indexPawn + 4], map[indexPawn + 5]];
+    oddHasRightEnemy ? validMoves.push({
+        kill: idFinder(enemyPawns,map[indexPawn + 4]),
+        x: map[indexPawn + 9].x,
+        y: map[indexPawn + 9].y,
+        width: map[indexPawn + 9].width,
+        height: map[indexPawn + 9].height
+    }) : null;
+    oddHasLeftEnemy ? validMoves.push({
+        kill: idFinder(enemyPawns,map[indexPawn + 3]),
+        x: map[indexPawn + 7].x,
+        y: map[indexPawn + 7].y,
+        width: map[indexPawn + 7].width,
+        height: map[indexPawn + 7].height
+    }) : null;
 }
-else if(oddRow&&thirdCol)
-{
-validMoves=[map[indexPawn+4],map[indexPawn+5]];
+else if (oddRow && thirdCol) {
+    validMoves = [map[indexPawn + 4], map[indexPawn + 5]];
+    oddHasRightEnemy ? validMoves.push({
+        kill: idFinder(enemyPawns,map[indexPawn + 4]),
+        x: map[indexPawn + 9].x,
+        y: map[indexPawn + 9].y,
+        width: map[indexPawn + 9].width,
+        height: map[indexPawn + 9].height
+    }) : null;
+    oddHasLeftEnemy ? validMoves.push({
+        kill: idFinder(enemyPawns,map[indexPawn + 3]),
+        x: map[indexPawn + 7].x,
+        y: map[indexPawn + 7].y,
+        width: map[indexPawn + 7].width,
+        height: map[indexPawn + 7].height
+    }) : null;
 }
-else if(oddRow&&forthCol)
-{
- validMoves=[map[indexPawn+4]];  
+else if (oddRow && forthCol) {
+    validMoves = [map[indexPawn + 4]];
+    oddHasLeftEnemy ? validMoves.push({
+        kill: idFinder(enemyPawns,map[indexPawn + 3]),
+        x: map[indexPawn + 7].x,
+        y: map[indexPawn + 7].y,
+        width: map[indexPawn + 7].width,
+        height: map[indexPawn + 7].height
+    }) : null;
 }
-if(evenRow&&firstCol)
-{
-validMoves=[map[indexPawn+4]]
+
+if (evenRow && firstCol) {
+    validMoves = [map[indexPawn + 4]];
+    evenHasRightEnemy ? validMoves.push({
+        kill: idFinder(enemyPawns,map[indexPawn + 5]),
+        x: map[indexPawn + 9].x,
+        y: map[indexPawn + 9].y,
+        width: map[indexPawn + 9].width,
+        height: map[indexPawn + 9].height
+    }) : null;
 }
-else if(evenRow&&secondCol)
-{
-validMoves=[map[indexPawn+3],map[indexPawn+4]];
+else if (evenRow && secondCol) {
+    validMoves = [map[indexPawn + 3], map[indexPawn + 4]];
+    evenHasRightEnemy ? validMoves.push({
+        kill: idFinder(enemyPawns,map[indexPawn + 5]),
+        x: map[indexPawn + 9].x,
+        y: map[indexPawn + 9].y,
+        width: map[indexPawn + 9].width,
+        height: map[indexPawn + 9].height
+    }) : null;
+    evenHasLeftEnemy ? validMoves.push({
+        kill: idFinder(enemyPawns,map[indexPawn + 4]),
+        x: map[indexPawn + 7].x,
+        y: map[indexPawn + 7].y,
+        width: map[indexPawn + 7].width,
+        height: map[indexPawn + 7].height
+    }) : null;
 }
-else if(evenRow&&thirdCol)
-{
-validMoves=[map[indexPawn+3],map[indexPawn+4]]
+else if (evenRow && thirdCol) {
+    validMoves = [map[indexPawn + 3], map[indexPawn + 4]];
+    evenHasRightEnemy ? validMoves.push({
+        kill: idFinder(enemyPawns,map[indexPawn + 5]),
+        x: map[indexPawn + 9].x,
+        y: map[indexPawn + 9].y,
+        width: map[indexPawn + 9].width,
+        height: map[indexPawn + 9].height
+    }) : null;
+    evenHasLeftEnemy ? validMoves.push({
+        kill: idFinder(enemyPawns,map[indexPawn + 4]),
+        x: map[indexPawn + 7].x,
+        y: map[indexPawn + 7].y,
+        width: map[indexPawn + 7].width,
+        height: map[indexPawn + 7].height
+    }) : null;
 }
-else if(evenRow&&forthCol)
-{
-validMoves=[map[indexPawn+3],map[indexPawn+4]]
+else if (evenRow && forthCol) {
+    validMoves = [map[indexPawn + 3], map[indexPawn + 4]];
+    evenHasLeftEnemy ? validMoves.push({
+        kill: idFinder(enemyPawns,map[indexPawn + 4]),
+        x: map[indexPawn + 7].x,
+        y: map[indexPawn + 7].y,
+        width: map[indexPawn + 7].width,
+        height: map[indexPawn + 7].height
+    }) : null;
 }}}
 
 let _validMoves=validMoves.filter(m=>!enemyPawns.some(p=>p.y===m.y&&p.x===m.x)&&!pawns.some(p=>p.y===m.y&&p.x===m.x))
@@ -183,7 +280,7 @@ return () => {
     canvas.removeEventListener("mousemove", mouseMove);
     canvas.removeEventListener("click", validMove);
   };
-}},[pawns,map,turn])
+}},[pawns,turn,enemyPawns])
 
 
 
@@ -209,64 +306,69 @@ let prevValidMoves=[]; // previus green highlighted moves so i can clear and red
 
 for(let selectedPawn of selectedPawns)
 {
-for(let i=map.length;i>0;i--)
-{
-let indexPawn=0;
-let oddRow=i/4%2!==0;
-let evenRow=Math.ceil(i/4)%2==0;
-let firstCol=i%4==1;
-let secondCol=i%4==2;
-let thirdCol=i%4==3;
-let forthCol=i%4==0;
-if(selectedPawn.x==map[map.length-i].x&&selectedPawn.y==map[map.length-i].y)
-{
-    indexPawn=map.length-i;
+let indexPawn=map.findIndex(s => s.x === selectedPawn.x && s.y === selectedPawn.y)
+let row=Math.floor(indexPawn/4);
+let evenRow=row%2==0;
+let oddRow=!evenRow;
+let firstCol=indexPawn%4==1;
+let secondCol=indexPawn%4==2;
+let thirdCol=indexPawn%4==3;
+let forthCol=indexPawn%4==0;
+let curr_pos=null;
 
 if(oddRow&&firstCol)
 {
 validMoves=[map[indexPawn-4]];
-console.log("odd");
+curr_pos="odd";
+
 }
 else if(oddRow&&secondCol)
 {
 validMoves=[map[indexPawn-4],map[indexPawn-5]];
+curr_pos="odd";
 console.log("odd");
 }
 else if(oddRow&&thirdCol)
 {
 validMoves=[map[indexPawn-4],map[indexPawn-5]];
+curr_pos="odd";
 console.log("odd");
 }
 else if(oddRow&&forthCol)
 {
- validMoves=[map[indexPawn-4],map[indexPawn-5]];  
- console.log("odd");
+ validMoves=[map[indexPawn-4],map[indexPawn-5]]; 
+ curr_pos="odd"; 
+ 
 }
 if(evenRow&&firstCol)
 {
 validMoves=[map[indexPawn-3],map[indexPawn-4]];
-console.log("even");
+curr_pos="even";
+
 }
 else if(evenRow&&secondCol)
 {
 validMoves=[map[indexPawn-3],map[indexPawn-4]];
-console.log("even");
+curr_pos="even";
+
 }
 else if(evenRow&&thirdCol)
 {
 validMoves=[map[indexPawn-3],map[indexPawn-4]]
-console.log("even");
+curr_pos="even";
+
 }
 else if(evenRow&&forthCol)
 {
 validMoves=[map[indexPawn-4]];
-console.log("even");
-}}}
+curr_pos="even";
+
+}
 
 let _validMoves=validMoves.filter(m=>!enemyPawns.some(p=>p.y===m.y&&p.x===m.x)&&!pawns.some(p=>p.y===m.y&&p.x===m.x))
 if(_validMoves.length>0)
 {
-validForMove.push({id:selectedPawn.id,x:selectedPawn.x,y:selectedPawn.y,moves:_validMoves});
+validForMove.push({id:selectedPawn.id,x:selectedPawn.x,y:selectedPawn.y,moves:_validMoves,pos:curr_pos});
 }
 else 
 {
@@ -279,20 +381,30 @@ function randMove()
 {
 let randPawnIndex=Math.floor(Math.random()*validForMove.length);
 randPawn=validForMove[randPawnIndex];
-let randMove={x:randPawn.moves[Math.floor(Math.random()*randPawn.moves.length)].x,
-y:randPawn.moves[Math.floor(Math.random()*randPawn.moves.length)].y
+let randMoveIndex=Math.floor(Math.random()*randPawn.moves.length);
+let randMove={x:randPawn.moves[randMoveIndex].x,
+y:randPawn.moves[randMoveIndex].y
 };
+let Index=map.findIndex(s=>s.x===randPawn.x&&s.y===randPawn.y)
 randPawn.moves.forEach(m=>
     {
       let s=new square(c,m.x,m.y,100,100,"green");
       s.build();
     });
 let s=new square(c,randPawn.x,randPawn.y,100,100,"green");
-let p=new pawn(c,randPawn).init(whitePawn);
+s.build();
+randPawn.width=100;
+randPawn.height=100;
+setTimeout(()=>
+{
+let p=new pawn(c,randPawn).init(enemyIcon);
+},100)
+
 
 s.build();
 if(randPawn)
-console.log(randPawn.id);
+
+console.log(randPawn.id,randPawn.pos,Index);
 setTimeout(()=>{
 newPositionEnemyPawns(randPawn.id,randMove.x,randMove.y);
 switchTurn(turn);
@@ -310,7 +422,7 @@ prevValidMoves=[];
 setTimeout(()=>{
 randMove(); 
 
-},1000)}},[enemyPawns,pawns,map,turn]);
+},1000)}},[turn,pawns,enemyPawns]);
 
 //redraw logic !
 useEffect(() => {
@@ -331,7 +443,12 @@ useEffect(() => {
       let Pawn = new pawn(c, p);
       Pawn.init(p.icon || blackPawn);
     });
-  }, [map,enemyPawns,turn]);
+
+    
+
+  
+
+  }, [pawns,enemyPawns]);
 
 
 return(
