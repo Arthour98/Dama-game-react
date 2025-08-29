@@ -1,0 +1,310 @@
+const SQUARE_SIZE = 100;
+
+export class Square {
+  constructor(ctx, x, y, width, height, color) {
+    this.ctx = ctx;
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.color = color;
+  }
+
+  build() {
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.rect(this.x, this.y, this.width, this.height);
+    this.ctx.fillStyle = this.color;
+    this.ctx.fill();
+    this.ctx.strokeStyle = '#000';
+    this.ctx.stroke();
+    this.ctx.closePath();
+    this.ctx.restore();
+  }
+}
+
+export class Pawn {
+  constructor(ctx, props) {
+    this.ctx = ctx;
+    this.x = props.x;
+    this.y = props.y;
+    this.width = props.width || SQUARE_SIZE;
+    this.height = props.height || SQUARE_SIZE;
+    this.id = props.id;
+    this.isKing = props.isKing || false;
+    this.scale = props.scale || 1;
+    this.opacity = props.opacity || 1;
+    this.glowIntensity = props.glowIntensity || 0;
+    this.rotation = props.rotation || 0;
+  }
+
+  init(image) {
+    if (!image || !this.ctx) return;
+
+    const padding = 10;
+    
+    // Save the current context state
+    this.ctx.save();
+    
+    // Calculate center point for transformations
+    const centerX = this.x + this.width / 2;
+    const centerY = this.y + this.height / 2;
+    
+    // Apply transformations from center point
+    this.ctx.translate(centerX, centerY);
+    if (this.scale !== 1) {
+      this.ctx.scale(this.scale, this.scale);
+    }
+    if (this.rotation) {
+      this.ctx.rotate(this.rotation);
+    }
+    this.ctx.translate(-centerX, -centerY);
+
+    // Apply opacity
+    this.ctx.globalAlpha = this.opacity;
+    
+    // Draw glow effect if piece is glowing
+    if (this.glowIntensity > 0) {
+      const color = this.id.startsWith('white') ? '#FFD700' : '#FF4500';
+      drawGlowEffect(this.ctx, this.x, this.y, this.width, color, this.glowIntensity);
+    }
+    
+    // Create a circular clipping path
+    const radius = (this.width - padding * 2) / 2;
+    this.ctx.beginPath();
+    this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    this.ctx.closePath();
+    
+    // Fill with a background color first
+    this.ctx.fillStyle = '#DDD';
+    this.ctx.fill();
+    
+    // Create clipping path
+    this.ctx.clip();
+
+    try {
+      // Draw the piece image
+      this.ctx.drawImage(
+        image,
+        this.x + padding,
+        this.y + padding,
+        this.width - padding * 2,
+        this.height - padding * 2
+      );
+    } catch (e) {
+      console.error('Error drawing pawn:', e);
+    }
+
+    // Restore the context state
+    this.ctx.restore();
+
+    // Draw crown for kings
+    if (this.isKing) {
+      this.drawCrown(centerX, this.y + padding);
+    }
+  }
+
+  drawCrown(x, y) {
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.strokeStyle = '#FFD700';
+    this.ctx.fillStyle = '#FFD700';
+    
+    // Draw a simple crown shape
+    this.ctx.moveTo(x - 15, y + 15);
+    this.ctx.lineTo(x - 10, y + 5);
+    this.ctx.lineTo(x - 5, y + 15);
+    this.ctx.lineTo(x, y + 5);
+    this.ctx.lineTo(x + 5, y + 15);
+    this.ctx.lineTo(x + 10, y + 5);
+    this.ctx.lineTo(x + 15, y + 15);
+    
+    this.ctx.fill();
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+}
+
+function drawGlowEffect(ctx, x, y, size, color, intensity) {
+  const radius = size / 2;
+  const centerX = x + radius;
+  const centerY = y + radius;
+
+  // Create radial gradient
+  const gradient = ctx.createRadialGradient(
+    centerX, centerY, radius * 0.5,
+    centerX, centerY, radius * 1.2
+  );
+
+  const alpha = Math.min(0.8, intensity);
+  gradient.addColorStop(0, `${color}00`);
+  gradient.addColorStop(0.5, `${color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`);
+  gradient.addColorStop(1, `${color}00`);
+
+  ctx.save();
+  ctx.fillStyle = gradient;
+  ctx.fillRect(x - size * 0.2, y - size * 0.2, size * 1.4, size * 1.4);
+  ctx.restore();
+}
+
+export function createBoard(ctx) {
+  const squares = [];
+  
+  // Create an 8x8 board
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const x = col * SQUARE_SIZE;
+      const y = row * SQUARE_SIZE;
+      const isPlayableSquare = (row + col) % 2 === 1;
+
+      // Store square data
+      squares.push({
+        x,
+        y,
+        width: SQUARE_SIZE,
+        height: SQUARE_SIZE,
+        row,
+        col,
+        isPlayableSquare
+      });
+    }
+  }
+  
+  return squares;
+}
+
+export function initializePawns(squares) {
+  const whitePawns = [];
+  const blackPawns = [];
+  
+  // Place pawns on the dark squares of the first three rows for white
+  squares
+    .filter(s => s.row < 3 && s.isPlayableSquare)
+    .forEach((square, index) => {
+      whitePawns.push({
+        id: `white-${index}`,
+        x: square.x,
+        y: square.y,
+        row: square.row,
+        col: square.col,
+        width: SQUARE_SIZE,
+        height: SQUARE_SIZE,
+        isKing: false
+      });
+    });
+  
+  // Place pawns on the dark squares of the last three rows for black
+  squares
+    .filter(s => s.row > 4 && s.isPlayableSquare)
+    .forEach((square, index) => {
+      blackPawns.push({
+        id: `black-${index}`,
+        x: square.x,
+        y: square.y,
+        row: square.row,
+        col: square.col,
+        width: SQUARE_SIZE,
+        height: SQUARE_SIZE,
+        isKing: false
+      });
+  });
+  
+  return { whitePawns, blackPawns };
+}
+
+export function getValidMoves(piece, squares, friendlyPieces, enemyPieces) {
+  const moves = [];
+  const pieceRow = Math.floor(piece.y / SQUARE_SIZE);
+  const pieceCol = Math.floor(piece.x / SQUARE_SIZE);
+  const isWhite = piece.id.startsWith('white');
+  
+  // Direction of movement (white moves down, black moves up)
+  const directions = piece.isKing ? [-1, 1] : [isWhite ? 1 : -1];
+  
+  // Helper function to check if a square is empty
+  const isEmpty = (row, col) => {
+    if (row < 0 || row > 7 || col < 0 || col > 7) return false;
+    
+    const square = squares.find(s => s.row === row && s.col === col);
+    if (!square) return false;
+    
+    return !friendlyPieces.some(p => 
+      Math.floor(p.y / SQUARE_SIZE) === row && 
+      Math.floor(p.x / SQUARE_SIZE) === col
+    ) && !enemyPieces.some(p => 
+      Math.floor(p.y / SQUARE_SIZE) === row && 
+      Math.floor(p.x / SQUARE_SIZE) === col
+    );
+  };
+  
+  // Helper function to get enemy at position
+  const getEnemyAt = (row, col) => {
+    return enemyPieces.find(p => 
+      Math.floor(p.y / SQUARE_SIZE) === row && 
+      Math.floor(p.x / SQUARE_SIZE) === col
+    );
+  };
+
+  // Function to check moves in a direction
+  const checkDirection = (dirRow, dirCol) => {
+    let currentRow = pieceRow;
+    let currentCol = pieceCol;
+    let hasJumped = false;
+
+    while (true) {
+      currentRow += dirRow;
+      currentCol += dirCol;
+
+      // Check if we're still on the board
+      if (currentRow < 0 || currentRow > 7 || currentCol < 0 || currentCol > 7) break;
+
+      if (isEmpty(currentRow, currentCol)) {
+        // If we haven't jumped over a piece, this is a valid move
+        if (!hasJumped) {
+          const targetSquare = squares.find(s => s.row === currentRow && s.col === currentCol);
+          if (targetSquare) {
+            moves.push({ targetIndex: squares.indexOf(targetSquare) });
+          }
+          // For non-king pieces, only allow one step moves
+          if (!piece.isKing) break;
+        }
+      } else {
+        // If we find an enemy piece
+        const enemy = getEnemyAt(currentRow, currentCol);
+        if (enemy && !hasJumped) {
+          // Check if we can jump over it
+          const jumpRow = currentRow + dirRow;
+          const jumpCol = currentCol + dirCol;
+          
+          if (isEmpty(jumpRow, jumpCol)) {
+            const targetSquare = squares.find(s => s.row === jumpRow && s.col === jumpCol);
+            if (targetSquare) {
+              moves.push({
+                targetIndex: squares.indexOf(targetSquare),
+                kill: enemy.id
+              });
+              
+              if (piece.isKing) {
+                // For king pieces, continue checking for multiple jumps
+                currentRow = jumpRow;
+                currentCol = jumpCol;
+                hasJumped = true;
+                continue;
+              }
+            }
+          }
+        }
+        break;  // Stop checking in this direction
+      }
+    }
+  };
+  
+  // Check all valid directions
+  directions.forEach(direction => {
+    [-1, 1].forEach(side => {
+      checkDirection(direction, side);
+    });
+  });
+  
+  return moves;
+}
